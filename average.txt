@@ -1,0 +1,77 @@
+application.js
+var http=require("http");
+var fs=require("fs");
+var url=require("url");
+var query=require("querystring");
+var m1=require("./average");
+function process_request(req,resp)
+{
+	resp.writeHead(200,{'Content-Type':'text/html'});
+	var u=url.parse(req.url);
+
+	switch(u.pathname)
+	{
+		case '/' :
+					fs.readFile("form.html",function(err,data)
+						{
+								if(err)
+								{
+									resp.write("error");
+								}
+								else
+								{
+									resp.write(data);
+									resp.end();
+								}
+						});
+					break;
+		case '/avg' :
+
+					var str="";
+				   	req.on('data',function(d){
+				   	str+=d;});
+				   	req.on('end',function(){
+				    console.log(str);
+					var ob=query.parse(str);
+					console.log(ob);
+					var sum=m1.avg(ob.n1,ob.n2,ob.n3,ob.n4);
+					resp.end("<h1>Average is : "+sum+" %</h1>");
+				   
+				   });
+				  break;
+
+	}
+
+}
+
+var server=http.createServer(process_request);
+server.listen(7000);
+console.log("Listening at port no 7000.....");
+-------------------------------------------------------------------------------------------------
+form.html
+
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<form action="/avg" method="post">
+	<table>
+
+			<tr><td>student 1</td><td><input type="text" name="n1"></td></tr>
+			<tr><td>student 2</td><td><input type="text" name="n2"></td></tr>
+			<tr><td>student 3</td><td><input type="text" name="n3"></td></tr>
+			<tr><td>student 4</td><td><input type="text" name="n4"></td></tr>
+
+			<tr><td><input type="submit" name="btn" value="calculate"></td></tr>
+		</tr>
+	</table>
+</form>
+</body>
+</html>
+-----------------------------------------------------------------------------------------------------------
+average.js
+exports.avg=function(a,b,c,d)
+{
+	return (parseInt(a)+parseInt(b)+parseInt(c)+parseInt(d))/4;
+}
